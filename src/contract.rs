@@ -27,17 +27,17 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
     msg: HandleMsg,
 ) -> StdResult<HandleResponse> {
     match msg {
-        HandleMsg::Increment {} => try_increment(deps, env),
+        HandleMsg::Square {} => try_square(deps, env),
         HandleMsg::Reset { count } => try_reset(deps, env, count),
     }
 }
 
-pub fn try_increment<S: Storage, A: Api, Q: Querier>(
+pub fn try_square<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
     _env: Env,
 ) -> StdResult<HandleResponse> {
     config(&mut deps.storage).update(|mut state| {
-        state.count += 1;
+        state.count = state.count * state.count;
         Ok(state)
     })?;
 
@@ -97,7 +97,7 @@ mod tests {
     }
 
     #[test]
-    fn increment() {
+    fn square() {
         let mut deps = mock_dependencies(20, &coins(2, "token"));
 
         let msg = InitMsg { count: 17 };
@@ -106,7 +106,7 @@ mod tests {
 
         // beneficiary can release it
         let env = mock_env(&deps.api, "anyone", &coins(2, "token"));
-        let msg = HandleMsg::Increment {};
+        let msg = HandleMsg::Square {};
         let _res = handle(&mut deps, env, msg).unwrap();
 
         // should increase counter by 1
